@@ -65,7 +65,14 @@ namespace PakDumper {
                 dr.ReadInt64(); // pos
                 dr.ReadInt64(); // compressed size
                 var uncompressedSize = dr.ReadInt64();
-                var compressionIndex = dr.ReadInt32();
+                int compressionIndex = 0;
+
+                if (version == 8) {
+                    compressionIndex = dr.ReadByte();
+                } else {
+                    compressionIndex = dr.ReadInt32();
+                }
+
                 var hash = dr.ReadArray(20);
 
                 if (compressionIndex != 0) {
