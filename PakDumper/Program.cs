@@ -6,12 +6,17 @@ namespace PakDumper {
     class Program {
         private static readonly byte[] MAGIC = { 0xE1, 0x12, 0x6F, 0x5A };
 
-        private static int RFindInArray(byte[] arr, byte[] find) {
-            for (int i = arr.Length - find.Length - 1; i >= 0; i--) {
-                for (int j = 0; j < find.Length; j++) {
-                    if (arr[i + j] != find[j]) break;
-                    if (j == find.Length - 1) return i;
+        private static int FindInStream(FileStream stream, byte[] find) {
+            while (stream.Position < stream.Length) {
+                var arr = new byte[find.Length];
+                stream.Read(arr, 0, find.Length);
+
+                for (int i = 0; i < find.Length; i++) {
+                    if (arr[i] != find[i]) break;
+                    if (i == find.Length - 1) return i;
                 }
+
+                stream.Seek(-(find.Length - 1), SeekOrigin.Current);
             }
 
             return -1;
@@ -29,9 +34,10 @@ namespace PakDumper {
             }
 
             var pakFile = new FileInfo(args[0]);
-            var data = File.ReadAllBytes(args[0]);
-            var dr = new DataReader(data);
-            var magic = RFindInArray(data, MAGIC);
+            using var fs = pakFile.OpenRead();
+            fs.Seek(-500, SeekOrigin.End);
+            var magic = FindInStream(fs, MAGIC);
+            var dr = new DataStreamReader(fs);
             using var stream = File.Create(pakFile.FullName.Replace(pakFile.Extension, ".txt"));
             using var sr = new StreamWriter(stream);
 
@@ -40,18 +46,17 @@ namespace PakDumper {
                 return -1;
             }
 
-            Console.WriteLine($"Found magic at 0x{magic:X}");
+            Console.WriteLine("Found magic");
 
-            dr.ptr = magic + 4;
             var version = dr.ReadInt32();
-            int indexOffset = (int)dr.ReadInt64();
-            int indexSize = (int)dr.ReadInt64();
+            var indexOffset = dr.ReadInt64();
+            var indexSize = dr.ReadInt64();
 
             Console.WriteLine($"Pak version {version}");
             Console.WriteLine($"Index Offset is 0x{indexOffset:X}");
             Console.WriteLine($"Index Size is {indexSize}");
 
-            dr.ptr = indexOffset;
+            dr.stream.Seek(indexOffset, SeekOrigin.Begin);
             dr.ReadString(dr.ReadInt32()); // mount point
             var fileCount = dr.ReadInt32();
 
@@ -77,10 +82,10 @@ namespace PakDumper {
 
                 if (compressionIndex != 0) {
                     var blockCount = dr.ReadInt32();
-                    dr.ptr += 16 * blockCount;
+                    dr.stream.Seek(16 * blockCount, SeekOrigin.Current);
                 }
 
-                dr.ptr += 5;
+                dr.stream.Seek(5, SeekOrigin.Current);
                 entries[i] = new PakEntry(filename, hash, uncompressedSize);
             }
 

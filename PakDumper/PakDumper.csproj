@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Common\DataReader.cs" Link="DataReader.cs" />
+    <Compile Include="..\Common\DataStreamReader.cs" Link="DataStreamReader.cs" />
   </ItemGroup>
 
 </Project>
