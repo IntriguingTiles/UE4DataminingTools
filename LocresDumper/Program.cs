@@ -66,10 +66,7 @@ namespace LocresDumper {
             for (int i = 0; i < namespaceCount; i++) {
                 if (version >= 2) dr.ReadInt32(); // hash
                 var ns = dr.ReadString(dr.ReadInt32());
-                Console.WriteLine($"Reading namespace {(ns.Length == 0 ? "Global" : ns)}");
-
                 var keyCount = dr.ReadInt32();
-                Console.WriteLine($"{keyCount} keys");
                 sr.WriteLine($"\nNamespace {(ns.Length == 0 ? "Global" : ns)} ({keyCount} keys)");
 
                 for (int j = 0; j < keyCount; j++) {
