@@ -10,8 +10,32 @@ namespace DumperCommon {
             this.data = data;
         }
 
+        public ushort ReadUInt16() {
+            var ret = BitConverter.ToUInt16(data, ptr);
+            ptr += 2;
+            return ret;
+        }
+
         public int ReadInt32() {
             var ret = BitConverter.ToInt32(data, ptr);
+            ptr += 4;
+            return ret;
+        }
+
+        public int PeekInt32() {
+            return BitConverter.ToInt32(data, ptr);
+        }
+
+        public uint PeekUInt32() {
+            return BitConverter.ToUInt32(data, ptr);
+        }
+
+        public byte PeekByte() {
+            return data[ptr];
+        }
+
+        public uint ReadUInt32() {
+            var ret = BitConverter.ToUInt32(data, ptr);
             ptr += 4;
             return ret;
         }
@@ -34,6 +58,7 @@ namespace DumperCommon {
                 ptr += len;
                 return ret;
             } else {
+                ptr += len;
                 return "";
             }
         }
@@ -54,6 +79,16 @@ namespace DumperCommon {
             var ret = data[ptr];
             ptr++;
             return ret;
+        }
+
+        public sbyte ReadSByte() {
+            var ret = (sbyte)data[ptr];
+            ptr++;
+            return ret;
+        }
+
+        public float ReadFloat() {
+            return BitConverter.Int32BitsToSingle(ReadInt32());
         }
     }
 }

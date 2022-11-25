@@ -22,7 +22,7 @@ namespace LocresDumper {
             var data = File.ReadAllBytes(args[0]);
             var dr = new DataReader(data);
             using var stream = File.Create(locFile.FullName.Replace(locFile.Extension, ".txt"));
-            using var sr = new StreamWriter(stream);
+            using var sw = new StreamWriter(stream);
 
             var readGuid = dr.ReadGuid();
 
@@ -40,12 +40,12 @@ namespace LocresDumper {
             if (version >= 2) {
                 var entriesCount = dr.ReadInt32();
                 Console.WriteLine($"{entriesCount} entries");
-                sr.WriteLine($"{entriesCount} entries");
+                sw.WriteLine($"{entriesCount} entries");
             }
 
             var namespaceCount = dr.ReadInt32();
             Console.WriteLine($"{namespaceCount} namespaces");
-            sr.WriteLine($"{namespaceCount} namespaces");
+            sw.WriteLine($"{namespaceCount} namespaces");
 
             var oldPtr = dr.ptr;
             dr.ptr = (int)valueOffset;
@@ -53,7 +53,7 @@ namespace LocresDumper {
             string[] values = new string[valueCount];
 
             Console.WriteLine($"{valueCount} values");
-            sr.WriteLine($"{valueCount} values");
+            sw.WriteLine($"{valueCount} values");
 
             for (int i = 0; i < valueCount; i++) {
                 values[i] = dr.ReadString(dr.ReadInt32());
@@ -67,14 +67,14 @@ namespace LocresDumper {
                 if (version >= 2) dr.ReadInt32(); // hash
                 var ns = dr.ReadString(dr.ReadInt32());
                 var keyCount = dr.ReadInt32();
-                sr.WriteLine($"\nNamespace {(ns.Length == 0 ? "Global" : ns)} ({keyCount} keys)");
+                sw.WriteLine($"\nNamespace {(ns.Length == 0 ? "Global" : ns)} ({keyCount} keys)");
 
                 for (int j = 0; j < keyCount; j++) {
                     if (version >= 2) dr.ReadInt32(); // hash
                     var key = dr.ReadString(dr.ReadInt32());
                     dr.ReadInt32(); // source string hash
                     var index = dr.ReadInt32();
-                    sr.WriteLine($"\t{key} = \"{values[index]}\"");
+                    sw.WriteLine($"\t{key} = \"{values[index]}\"");
                 }
             }
 

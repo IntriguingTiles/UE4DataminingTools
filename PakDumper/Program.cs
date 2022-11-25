@@ -39,7 +39,7 @@ namespace PakDumper {
             var magic = FindInStream(fs, MAGIC);
             var dr = new DataStreamReader(fs);
             using var stream = File.Create(pakFile.FullName.Replace(pakFile.Extension, ".txt"));
-            using var sr = new StreamWriter(stream);
+            using var sw = new StreamWriter(stream);
 
             if (magic == -1) {
                 Console.Error.WriteLine("Couldn't find magic");
@@ -61,7 +61,7 @@ namespace PakDumper {
             var fileCount = dr.ReadInt32();
 
             Console.WriteLine($"{fileCount} files");
-            sr.WriteLine($"{fileCount} files");
+            sw.WriteLine($"{fileCount} files");
 
             var entries = new PakEntry[fileCount];
 
@@ -92,7 +92,7 @@ namespace PakDumper {
             Array.Sort(entries, (a, b) => a.Name.CompareTo(b.Name));
 
             foreach (var entry in entries) {
-                sr.WriteLine($"{entry.Name} hash:{Convert.ToHexString(entry.Hash)} size:{entry.Size}");
+                sw.WriteLine($"{entry.Name} hash:{Convert.ToHexString(entry.Hash)} size:{entry.Size}");
             }
 
             Console.WriteLine("Info dumped to file");
